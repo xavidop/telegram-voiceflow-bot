@@ -1,10 +1,6 @@
-<p align="center">
-  <img width="680"src="https://github.com/Gapur/cupido-bot/blob/master/images/bot-father.png">
-</p>
+![image](/images/bot-father.png)
 
-# cupido-bot
-
-Love Calculator Telegram Bot with Node.js
+# telegram-voiceflow-bot
 
 Since Telegram Bot has appeared, I always interested in how they work. So I decided to build simple Telegram Bot with Node.js and Telegraf. Telegraf is a modern bot framework for Node.js.
 
@@ -12,11 +8,7 @@ Since Telegram Bot has appeared, I always interested in how they work. So I deci
 
 First, We should create own bot with BotFather. BotFather is the one bot to rule them all. We will use it to create new bot accounts and manage your existing bots.
 
-If you open a chat with a BotFather, click on the “Start” button:
-
-<p align="center">
-  <img width="680"src="https://github.com/Gapur/cupido-bot/blob/master/images/start.png">
-</p>
+If you open a chat with a BotFather, click on the “Start” button.
 
 We should create a new bot by clicking /newbot command. Next, you should enter any name for the bot. I named Cupido 
 
@@ -26,17 +18,17 @@ Install and run the project:
 
 1. Clone this repo:
 ```
-git clone https://github.com/Gapur/cupido-bot.git
+git clone https://github.com/xavidop/teelgram-voiceflow-bot.git
 ```
 
 2. Install dependencies:
 ```
-npm install
+yarn install
 ```
 
 3. Launch project:
 ```
-node index.js
+yarn start
 ```
 
 ## Write bot’s code
@@ -51,117 +43,71 @@ bot.hears('hi', (ctx) => ctx.reply('Hey there')) // listen and handle when user 
 bot.launch() // start
 ```
 
-<p align="center">
-  <img width="680"src="https://github.com/Gapur/cupido-bot/blob/master/images/two-step.png">
-</p>
-
 We can change bot’s icon by /mybots command.
 
-<p align="center">
-  <img width="680"src="https://github.com/Gapur/cupido-bot/blob/master/images/image.png">
-</p>
-
-Let's create loveCalculator.js to work with api:
+Let's create the Voiceflow client to work with Voiceflow's cloud:
 ```js
-
-const axios = require("axios");
-
-const BASE_URL = "https://love-calculator.p.rapidapi.com";
-
-module.exports = {
-  getPercentage: (yourName, partnerName) => axios({
-      "method": "GET",
-      "url": `${BASE_URL}/getPercentage`,
-      "headers": {
-        "content-type": "application/octet-stream",
-        "x-rapidapi-host": "love-calculator.p.rapidapi.com",
-        "x-rapidapi-key": process.env.RAPID_API_KEY
-      },
-      "params": {
-        "fname": yourName,
-        "sname": partnerName
-        }
-      })
-};
+async function initializeclient(forceRestart){
+    if(chatbot === null || chatbot === undefined || forceRestart){
+        chatbot = new App({
+            versionID: process.env.VOICEFLOW_PROGRAM
+        });
+        return startState = await chatbot.start();
+    }
+    return null;
+}
 ```
 
-I used stage from telegraf to implement a two-step conversation between user and bot. Stage is a simple scene-based control flow middleware.
-```js
-const Telegraf = require('telegraf');
-const Markup = require("telegraf/markup");
-const Stage = require("telegraf/stage");
-const session = require("telegraf/session");
-const WizardScene = require("telegraf/scenes/wizard");
+Let's replace the start starndard replay for this one, getting the correct replay from Voiceflow:
 
-const loveCalculator = require("./api/loveCalculator");
+```javascript
 
-const bot = new Telegraf(process.env.BOT_TOKEN)
-
-bot.start(ctx => {
-  ctx.reply(
-    `Hello ${ctx.from.first_name}, would you like to know the love compatibility?`,
-    Markup.inlineKeyboard([
-      Markup.callbackButton("Love Calculate", "LOVE_CALCULATE")
-    ]).extra()
-  );
+const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
+bot.start(async (ctx) => {
+  conversationEnded = false;
+  let startState = await initializeclient(true);
+  ctx.reply(startState.trace[0].payload.message);	
 });
 
-// love calculator two-step wizard
-const loveCalculate = new WizardScene(
-  "love_calculate",
-  ctx => {
-    ctx.reply("Please, enter your name"); // enter your name
-    return ctx.wizard.next();
-  },
-  ctx => {
-    ctx.wizard.state.yourName = ctx.message.text; // store yourName in the state to share data between middlewares
-    ctx.reply(
-      "Enter the name of your partner/lover/crush to find Love compatibility & chances of successful love relationship."
-    );
-    return ctx.wizard.next();
-  },
-  ctx => {
-    const partnerName = ctx.message.text; // retrieve partner name from the message which user entered
-    const yourName = ctx.wizard.state.yourName; // retrieve your name from state
-    loveCalculator
-      .getPercentage(yourName, partnerName)
-      .then(res => {
-        const { fname, sname, percentage, result } = res.data;
-        ctx.reply(
-          `${fname} + ${sname} = ${percentage}% \n ${percentage > 50 ? '☺️' : '😢'} ${result}`,
-          Markup.inlineKeyboard([
-            Markup.callbackButton(
-              "♥️ calculate Another Relationship",
-              "LOVE_CALCULATE"
-            )
-          ]).extra()
-        );
-      })
-      .catch(err => ctx.reply(
-        err.message,
-        Markup.inlineKeyboard([
-          Markup.callbackButton("calculate again", "LOVE_CALCULATE")
-        ]).extra()
-      ));
-    return ctx.scene.leave();
-  }
-);
-
-const stage = new Stage([loveCalculate], { default: "love_calculate" }); // Scene registration
-bot.use(session());
-bot.use(stage.middleware());
-bot.launch();
 ```
+
+Then we replace the `hi` utterance for a regex like `(.+)`. This means that the bot will hear for everything. All the text recieved we will pass directly to Voiceflow and the we mange the state of the conversation: if it is ended or if it is not ended yet:
+
+```javascript
+
+const regex = new RegExp(/(.+)/i)
+bot.hears(regex, async (ctx) =>{ 
+    let replay = '';
+    if(!conversationEnded){
+        await initializeclient();
+        const newState = await chatbot.sendText(ctx.message.text);
+        
+        if(newState.trace.length === 0){
+            replay += "Sorry, I did not understand you. Can you repeat, please?"
+        }else{
+            replay = newState.trace[0].payload.message;
+        }
+
+        if(newState.end){
+            replay += "\nIf you want to start again just write /start"
+            conversationEnded = true;
+        }
+    }else{
+        replay = "\nThe Conversation has ended. If you want to start again just write /start"
+    }
+
+    ctx.reply(replay)
+})
+
+```
+
+This is the final architecture:
+
+![image](/images/architecture.png)
 
 ## Our Telegram Bot
 
-<p align="center">
-  <img width="680"src="https://github.com/Gapur/cupido-bot/blob/master/images/bot.png">
-</p>
-
-## Article on Medium
-
-[Build own Telegram Bot with Node.js](https://medium.com/@gapur.kassym/build-own-telegram-bot-with-node-js-516b8f233585)
+![image](/images/bot.png)
 
 ## How to contribute?
 
