@@ -128,10 +128,10 @@
     split2 "^3.1.1"
     strip-json-comments "^3.1.1"
 
-"@voiceflow/runtime-client-js@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@voiceflow/runtime-client-js/-/runtime-client-js-1.0.1.tgz#30d1e13d537d39fde238d98506ed79ed4dba8b11"
-  integrity sha512-JGRilPpUBRRL6KXS7hyeGzNNzMaAWlQsdL39PskuVqIxIsKmvfhb8dmhfDivFaQ89/m0RmXrbwv50YXNgWk1sw==
+"@voiceflow/runtime-client-js@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@voiceflow/runtime-client-js/-/runtime-client-js-1.6.0.tgz#e915cdbc7dc00ccac9e53a2545f41b86037bf996"
+  integrity sha512-J+ICkZ4lZ6ylNpZZmU8yxDIwErFu6fBFrpz30qQPsyqtnzgJuPdKF77FavMoCNGv51RTVZDMfoW1kDdFV9vVPQ==
   dependencies:
     "@types/lodash" "^4.14.168"
     "@voiceflow/general-types" "^1.19.0"

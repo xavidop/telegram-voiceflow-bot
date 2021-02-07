@@ -1,5 +1,5 @@
 const { Telegraf } = require('telegraf')
-const { App } = require('@voiceflow/runtime-client-js');
+const App = require('@voiceflow/runtime-client-js');
 require('dotenv').config();
 
 let chatbot;
@@ -9,7 +9,7 @@ const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 bot.start(async (ctx) => {
   conversationEnded = false;
   let startState = await initializeclient(true);
-  ctx.reply(startState.trace[0].payload.message);	
+  ctx.reply(startState.getResponse()[0].payload.message);	
 });
 
 const regex = new RegExp(/(.+)/i)
@@ -19,13 +19,13 @@ bot.hears(regex, async (ctx) =>{
         await initializeclient();
         const newState = await chatbot.sendText(ctx.message.text);
         
-        if(newState.trace.length === 0){
+        if(newState.getResponse().length === 0){
             replay += "Sorry, I did not understand you. Can you repeat, please?"
         }else{
-            replay = newState.trace[0].payload.message;
+            replay = newState.getResponse()[0].payload.message;
         }
 
-        if(newState.end){
+        if(newState.isEnding()){
             replay += "\nIf you want to start again just write /start"
             conversationEnded = true;
         }
@@ -45,7 +45,7 @@ process.once('SIGTERM', () => bot.stop('SIGTERM'))
 
 async function initializeclient(forceRestart){
     if(chatbot === null || chatbot === undefined || forceRestart){
-        chatbot = new App({
+        chatbot = new App.default({
             versionID: process.env.VOICEFLOW_PROGRAM
         });
         return startState = await chatbot.start();

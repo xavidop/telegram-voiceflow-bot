@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 node index.js"
+    "start": "node index.js"
   },
   "author": "Xavier Portilla Edo",
   "license": "ISC",
@@ -22,7 +22,7 @@
     "javascript"
   ],
   "dependencies": {
-    "@voiceflow/runtime-client-js": "^1.0.1",
+    "@voiceflow/runtime-client-js": "^1.6.0",
     "dotenv": "^8.2.0",
     "telegraf": "^4.0.0"
   }
