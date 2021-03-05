@@ -112,6 +112,7 @@ To obtain your VersionID you have to go to your Voiceflow Project:
 Then copy the `VERSION_ID` from the URL in your address bar. When you are inside a Voiceflow project, your address bar should have a URL of the form: `https://creator.voiceflow.com/project/{VERSION_ID}/...`
 
 2. **apiKey**
+   
 To obtain the API Key we have to go to our workspace where we have created our General Project. After this, we have to append to the URL `/api-keys`:
 
 ![image](/images/api-key-page.png)
