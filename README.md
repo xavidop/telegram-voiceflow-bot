@@ -101,7 +101,7 @@ const factory = new RuntimeClientFactory({
 });
 ```
 
-As you can see there are some values that it will be added in our `.env` file. Let's explain how to obtain those variables.
+As you can see there are some values that will be added to our `.env` file. Let's explain how to obtain those variables.
 
 1. **VersionID**
 
@@ -125,7 +125,7 @@ There you have to add a name to the new API Key, for example, `telegram-bot`. On
 
 ![image](/images/api-key-list.png)
 
-Finally, we have to add these variables of our final `.env` file. It should look like this:
+Finally, we have to add these variables to our final `.env` file. It should look like this:
 
 ```properties
 TELEGRAM_TOKEN='<your-telegram-token>'
